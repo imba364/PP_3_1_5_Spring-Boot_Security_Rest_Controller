@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 public interface UserService {
-    List<User> getUsers(int count);
+    List<User> getUsers();
 
-    void saveUser(User user, Set<String> roles);
+    void saveUser(User user);
 
     void deleteUser(Long id);
 

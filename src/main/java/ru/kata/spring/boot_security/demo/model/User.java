@@ -11,7 +11,7 @@ import javax.validation.constraints.Positive;
 import java.util.Collection;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Data
 public class User implements UserDetails {
     @Id

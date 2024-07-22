@@ -10,6 +10,7 @@ import ru.kata.spring.boot_security.demo.dao.UserRepository;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,7 +30,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (userRepository.findByEmail(email).isEmpty()) {
+            throw new EntityNotFoundException("Пользователь не найден");
+        } else {
+            return userRepository.findByEmail(email).get();
+        }
     }
 
     @Override
@@ -47,34 +52,30 @@ public class UserServiceImpl implements UserService {
         Role adminRole = new Role("ADMIN");
         Role userRole = new Role("USER");
 
-//        User first = new User("", "", (byte) 1, "1", "1", Set.of(adminRole));
         User user = new User("vasya", "vasin", (byte) 17, "vasya@gmail.com", "1234", Set.of(adminRole));
         User admin = new User("petr", "petrov", (byte) 18, "petr@gmail.com", "1234", Set.of(userRole));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
-//        first.setPassword(passwordEncoder.encode(first.getPassword()));
+
 
         userRepository.save(user);
         userRepository.save(admin);
-//        userRepository.save(first);
+
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsers(int count) {
+    public List<User> getUsers() {
         return userRepository.findAll();
     }
 
     @Override
     @Transactional
-    public void saveUser(User user, Set<String> roles) {
-        if (roles == null) {
-            user.setRoles(roleRepository.findAllByName("USER"));
-        } else {
-            user.setRoles(roleRepository.findAllByNameIn(roles));
+    public void saveUser(User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
     }
 
     @Override
@@ -88,5 +89,4 @@ public class UserServiceImpl implements UserService {
     public User getUserById(Long id) {
         return userRepository.findById(id).get();
     }
-
 }
